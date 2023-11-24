@@ -1,0 +1,4 @@
+1. Return better table names and column names
+2. Don't return all columns, eg. password
+3. Let's call "stats" for all statistics stuff
+4. Authorization based on user type. Log in system. Can have session capability
