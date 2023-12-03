@@ -58,13 +58,13 @@ CREATE TABLE Matches (
 	live_score VARCHAR(20),
 	referee_id INT,
 	match_status VARCHAR(20),
-    home_team_id INT,
-    away_team_id INT,
+	home_team_id INT,
+	away_team_id INT,
 	FOREIGN KEY (stad_id) REFERENCES Stadium(stad_id),
 	FOREIGN KEY (referee_id) REFERENCES Users(user_id),
 	FOREIGN KEY (sport_id) REFERENCES Sports(sport_id),
-    FOREIGN KEY (home_team_id) REFERENCES Teams(team_id),
-    FOREIGN KEY (away_team_id) REFERENCES Teams(team_id),
+	FOREIGN KEY (home_team_id) REFERENCES Teams(team_id),
+	FOREIGN KEY (away_team_id) REFERENCES Teams(team_id)
 );
 
 CREATE TABLE BookingHistory (
@@ -130,12 +130,12 @@ INSERT INTO Sports (sport_id, sport_name, instuction, match_duration) VALUES
 (4, 'Tennis', 'Players or teams compete on opposite sides of a net, trying to hit a ball onto the other player’s court', 120),
 (5, 'American Football', 'Two teams compete to advance the ball into the opponent’s end zone to score points', 60);
 
-INSERT INTO Matches (match_id, match_name, stad_id, sport_id, match_time, ticketNum, ticket_price, live_score, referee_id, match_status) VALUES
-(1, 'El Clasico', 1, 1, '2023-11-20', 99354, 150, '0-0', 2, 'Scheduled'),
-(2, 'NBA Finals Game 7', 4, 2, '2023-06-18', 19068, 200, '0-0', 2, 'Scheduled'),
-(3, 'World Series Game 5', 2, 3, '2023-10-30', 47309, 100, '0-0', 2, 'Scheduled'),
-(4, 'Wimbledon Men’s Final', 3, 4, '2023-07-14', 15000, 500, '0-0', 2, 'Scheduled'),
-(5, 'Super Bowl', 3, 5, '2024-02-04', 80000, 1000, '0-0', 2, 'Scheduled');
+INSERT INTO Matches (match_id, match_name, stad_id, sport_id, match_time, ticketNum, ticket_price, live_score, referee_id, match_status, home_team_id, away_team_id) VALUES
+(1, 'El Clasico', 1, 1, '2023-11-20', 99354, 150, '0-0', 2, 'Scheduled', 101, 102),
+(2, 'NBA Finals Game 7', 4, 2, '2023-06-18', 19068, 200, '0-0', 2, 'Scheduled', 103, 104),
+(3, 'World Series Game 5', 2, 3, '2023-10-30', 47309, 100, '0-0', 2, 'Scheduled', 105, 106),
+(4, 'Wimbledon Men’s Final', 3, 4, '2023-07-14', 15000, 500, '0-0', 2, 'Scheduled', 107, 108),
+(5, 'Super Bowl', 3, 5, '2024-02-04', 80000, 1000, '0-0', 2, 'Scheduled', 109, 110);
 
 INSERT INTO BookingHistory (match_id, user_id, order_time, ticket_num, order_id) VALUES
 (1, 3, '2023-10-01 10:30:00', 2, NULL),
