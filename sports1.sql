@@ -58,9 +58,13 @@ CREATE TABLE Matches (
 	live_score VARCHAR(20),
 	referee_id INT,
 	match_status VARCHAR(20),
+    home_team_id INT,
+    away_team_id INT,
 	FOREIGN KEY (stad_id) REFERENCES Stadium(stad_id),
 	FOREIGN KEY (referee_id) REFERENCES Users(user_id),
-	FOREIGN KEY (sport_id) REFERENCES Sports(sport_id)
+	FOREIGN KEY (sport_id) REFERENCES Sports(sport_id),
+    FOREIGN KEY (home_team_id) REFERENCES Teams(team_id),
+    FOREIGN KEY (away_team_id) REFERENCES Teams(team_id),
 );
 
 CREATE TABLE BookingHistory (
