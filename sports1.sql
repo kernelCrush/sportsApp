@@ -68,7 +68,7 @@ CREATE TABLE BookingHistory (
 	user_id INT,
 	order_time DATETIME,
 	ticket_num INT,
-	order_id INT PRIMARY KEY,
+	order_id INT AUTO_INCREMENT PRIMARY KEY,
 	FOREIGN KEY (match_id) REFERENCES Matches(match_id),
 	FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );

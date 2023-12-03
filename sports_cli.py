@@ -1,6 +1,8 @@
 import sqlite3
 import argparse
+import datetime
 from prettytable import PrettyTable
+
 
 # =====================varun====================================
 
@@ -119,6 +121,8 @@ def check_login(conn, username, password):
     if result and result[0] == password:
         return True, result[1]
     return False, ""
+
+
 # =========================================================================↑
 
 
@@ -127,7 +131,8 @@ def check_login(conn, username, password):
 def insert_tuple(conn, table_name, *para):
     if table_name == "Users":  # (conn,"Users", user_name, user_right, user_password)
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO Users (user_name, user_right, points, user_password) VALUES (?,?,?,?)", (para[0], para[1], 0, para[2],))
+        cursor.execute("INSERT INTO Users (user_name, user_right, points, user_password) VALUES (?,?,?,?)",
+                       (para[0], para[1], 0, para[2],))
         conn.commit()
         print("-----To show the insert result: ")
         list_table(conn, "Users")
@@ -141,7 +146,7 @@ def delete_tuple(conn, delete_input):
         print("Invalid format. Use 'table name:attribute name:attribute value'")
         return
 
-    cursor = conn.cursor()        # DELETE FROM Team WHERE team_name = '123';
+    cursor = conn.cursor()  # DELETE FROM Team WHERE team_name = '123';
     cursor.execute(f"DELETE FROM {table_name} WHERE {column}='{value}'")
     conn.commit()
     print("-----To show the delete result: ")
@@ -166,6 +171,7 @@ def update_tuple(conn, update_input):
     print("-----To show the update result: ")
     list_table(conn, "Matches")
 
+
 # query tuples from tables.
 def query_table(conn, query_sql):
     cursor = conn.cursor()
@@ -184,6 +190,7 @@ def query_table(conn, query_sql):
     print(table)
     return rows
 
+
 # user signup
 def user_signup(conn):
     user_name = input("what is your username: ")
@@ -193,14 +200,14 @@ def user_signup(conn):
 
 
 # Search stadium details
-def search_stadium(conn,stadium_name):
+def search_stadium(conn, stadium_name):
     query_sql = f"SELECT stad_id, stad_name, capacity, address, stad_area, stad_status, livecapacity FROM Stadium WHERE stad_name = '{stadium_name}'"
     print(query_sql)
     query_table(conn, query_sql)
 
 
-# Booking tickets
-def ticket_booking(conn,match_name):
+# Booking tickets (rollback)
+def ticket_booking(conn, match_name, username):
     cursor = conn.cursor()
     cursor.execute("SELECT match_name FROM Matches WHERE match_status = 'Scheduled'")
     rows = cursor.fetchall()
@@ -210,14 +217,56 @@ def ticket_booking(conn,match_name):
         print(match_names)
         match_name = input()
 
-    cursor.execute(f"SELECT ticketNum FROM Matches WHERE match_name = '{match_name}'")
+    cursor.execute(f"SELECT ticketNum, match_id FROM Matches WHERE match_name = '{match_name}'")
     rows = cursor.fetchone()
-    ticket_left = (rows[0])
+    ticket_left, match_id = rows
 
-    ticket_num = input(f"There are {ticket_left} tickets left for match ‘{match_name}', how many do you want: ")
+    ticket_num = int(input(f"There are {ticket_left} tickets left for match ‘{match_name}', how many do you want: "))
 
-    cursor.execute("")
+    cursor.execute(f"SELECT user_id FROM Users WHERE user_name = '{username}'")
+    rows = cursor.fetchone()
+    usr_id = rows[0]
 
+    current_date = datetime.date.today()
+    formatted_date = current_date.strftime('%Y-%m-%d')
+
+    # start transaction
+    try:
+        cursor.execute("INSERT INTO BookingHistory (match_id, user_id, order_time, ticket_num) VALUES (?,?,?,?)",
+                   (match_id, usr_id, formatted_date, ticket_num,))
+        cursor.execute(f"UPDATE Matches SET ticketNum = '{int(ticket_left) - ticket_num}' WHERE match_name = '{match_name}'")
+        conn.commit()
+
+    except sqlite3.Error as e:
+        # If error happens, rollback
+        print(f"An error occurred: {e}")
+        conn.rollback()
+
+    print("-----To show the transaction result:")
+    list_table(conn, "Matches")
+    list_table(conn, "BookingHistory")
+
+
+def search_matches(conn):
+    sql = '''SELECT
+        M.match_name, T1.team_name AS home_team, T2.team_name AS away_team, S.stad_name AS stadium_name, SP.sport_name, U.user_name AS referee_name
+        FROM Matches M
+        JOIN Teams T1 ON M.home_team_id = T1.team_id
+        JOIN Teams T2 ON M.away_team_id = T2.team_id
+        JOIN Stadium S ON M.stad_id = S.stad_id
+        JOIN Sports SP ON M.sport_id = SP.sport_id
+        JOIN Users U ON M.referee_id = U.user_id'''
+    query_table(conn, sql)
+    # cursor = conn.cursor()
+    # cursor.execute('''SELECT
+    #     M.match_name, T1.team_name AS home_team, T2.team_name AS away_team, S.stad_name AS stadium_name, SP.sport_name, U.user_name AS referee_name
+    #     FROM Matches M
+    #     JOIN Teams T1 ON M.home_team_id = T1.team_id
+    #     JOIN Teams T2 ON M.away_team_id = T2.team_id
+    #     JOIN Stadium S ON M.stad_id = S.stad_id
+    #     JOIN Sports SP ON M.sport_id = SP.sport_id
+    #     JOIN Users U ON M.referee_id = U.user_id;''')
+    # rows = cursor.fetchall()
 
 # ---------------------------------------------------------------------------↑
 
@@ -239,7 +288,8 @@ def main():
     # -----------------------------Jingjing----------------------
     # 1.2 Delete individual player/team stats
     # command: python .\sports_cli.py --username Leah --password leah123 --delete Users:user_name:li
-    parser.add_argument('--delete', type=str, help='Delete tuple from tables(table name:attribute name:attribute value)')
+    parser.add_argument('--delete', type=str,
+                        help='Delete tuple from tables(table name:attribute name:attribute value)')
 
     # 2.Ability to input live scores for games, and view the same by multiple users in real-time 3.Only referee have the right to change the live score of certain match.
     # command: python .\sports_cli.py --username Leah --password leah123 --updatescore El_Clasico=0-1
@@ -253,7 +303,14 @@ def main():
     parser.add_argument('--stadium', type=str, help='Search ditails of stadium(stadium name)')
 
     # 7. Booking a ticket
+    # python .\sports_cli.py --username li --password 123456 --ticket "El Clasico"
     parser.add_argument('--ticket', type=str, help='Book tickets for certain match(match name)')
+
+    # 11. Query the information of matches using the joins on Ids in different tables(Query that
+    # joins at least 5 tables)
+    # python .\sports_cli.py --username li --password 123456 --matchinfo
+    parser.add_argument('--matchinfo', action='store_true', help='Show all the information of matches')
+
     # -----------------------------------------------------------↑
 
     args = parser.parse_args()
@@ -302,7 +359,7 @@ def main():
         else:
             print("Invalid stats type or missing parameters")
 
-# ----------------------------Jingjing-------------------------------------↓
+    # ----------------------------Jingjing-------------------------------------↓
     elif args.delete:
         delete_tuple(conn, args.delete)
 
@@ -317,8 +374,11 @@ def main():
         search_stadium(conn, args.stadium)
 
     elif args.ticket:
-        ticket_booking(conn,args.ticket, args.username)
-# -------------------------------------------------------------------------↑
+        ticket_booking(conn, args.ticket, args.username)
+
+    elif args.matchinfo:
+        search_matches(conn)
+    # -------------------------------------------------------------------------↑
     conn.close()
 
 
