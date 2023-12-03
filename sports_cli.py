@@ -257,16 +257,6 @@ def search_matches(conn):
         JOIN Sports SP ON M.sport_id = SP.sport_id
         JOIN Users U ON M.referee_id = U.user_id'''
     query_table(conn, sql)
-    # cursor = conn.cursor()
-    # cursor.execute('''SELECT
-    #     M.match_name, T1.team_name AS home_team, T2.team_name AS away_team, S.stad_name AS stadium_name, SP.sport_name, U.user_name AS referee_name
-    #     FROM Matches M
-    #     JOIN Teams T1 ON M.home_team_id = T1.team_id
-    #     JOIN Teams T2 ON M.away_team_id = T2.team_id
-    #     JOIN Stadium S ON M.stad_id = S.stad_id
-    #     JOIN Sports SP ON M.sport_id = SP.sport_id
-    #     JOIN Users U ON M.referee_id = U.user_id;''')
-    # rows = cursor.fetchall()
 
 # ---------------------------------------------------------------------------↑
 
