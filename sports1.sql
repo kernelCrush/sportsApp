@@ -1,5 +1,5 @@
 CREATE TABLE Users (
-	user_id INT PRIMARY KEY,
+	user_id INT AUTO_INCREMENT PRIMARY KEY,
 	user_name VARCHAR(20),
 	user_right VARCHAR(10),
 	points INT,
@@ -7,7 +7,7 @@ CREATE TABLE Users (
 );
 
 CREATE TABLE Players (
-	player_id INT PRIMARY KEY,
+	player_id INT AUTO_INCREMENT PRIMARY KEY,
 	player_name VARCHAR(20),
 	player_score INT,
 	player_birthday DATETIME,
@@ -19,7 +19,7 @@ CREATE TABLE Players (
 );
 
 CREATE TABLE Teams (
-	team_id INT PRIMARY KEY,
+	team_id INT AUTO_INCREMENT PRIMARY KEY,
 	team_name VARCHAR(20),
 	coach_id INT,
 	orig_place VARCHAR(20),
@@ -31,7 +31,7 @@ CREATE TABLE Teams (
 );
 
 CREATE TABLE Stadium (
-	stad_id INT PRIMARY KEY,
+	stad_id INT AUTO_INCREMENT PRIMARY KEY,
 	stad_name VARCHAR(20),
 	capacity INT,
 	address VARCHAR(30),
@@ -41,14 +41,14 @@ CREATE TABLE Stadium (
 );
 
 CREATE TABLE Sports (
-	sport_id INT PRIMARY KEY,
+	sport_id INT AUTO_INCREMENT PRIMARY KEY,
 	sport_name VARCHAR(20),
 	instuction TEXT,
 	match_duration INT
 );
 
 CREATE TABLE Matches (
-	match_id INT PRIMARY KEY,
+	match_id INT AUTO_INCREMENT PRIMARY KEY,
 	match_name VARCHAR(20),
 	stad_id INT,
 	sport_id INT,
@@ -84,7 +84,7 @@ CREATE TABLE ParticipationRecord (
 );
 
 CREATE TABLE HistoricalFacts (
-	fact_id INT PRIMARY KEY,
+	fact_id INT AUTO_INCREMENT PRIMARY KEY,
 	content TEXT,
 	publish_time DATETIME,
 	author_id INT,
