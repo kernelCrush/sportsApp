@@ -152,6 +152,16 @@ def delete_tuple(conn, delete_input):
     print("-----To show the delete result: ")
     list_table(conn, table_name)
 
+def update_user_points(conn, user_id, player_id):
+    cursor = conn.cursor()
+    update_query = """
+    UPDATE Users
+    SET points = points + (SELECT player_score FROM Players WHERE player_id = ?)
+    WHERE user_id = ?;
+    """
+    cursor.execute(update_query, (player_id, user_id))
+    conn.commit()
+    print(f"Updated points for user ID {user_id} based on player ID {player_id} performance.")
 
 # Update tuple for certain table
 def update_tuple(conn, update_input):
@@ -300,6 +310,9 @@ def main():
     # joins at least 5 tables)
     # python .\sports_cli.py --username li --password 123456 --matchinfo
     parser.add_argument('--matchinfo', action='store_true', help='Show all the information of matches')
+    parser.add_argument('--update_points', action='store_true', help='Update user points based on player performance')
+    parser.add_argument('--user_id', type=int, help='User ID for updating points')
+    parser.add_argument('--player_id', type=int, help='Player ID to base point update on')
 
     # -----------------------------------------------------------↑
 
@@ -368,7 +381,12 @@ def main():
 
     elif args.matchinfo:
         search_matches(conn)
-    # -------------------------------------------------------------------------↑
+    elif args.update_points:
+        if args.user_id is not None and args.player_id is not None:
+            update_user_points(conn, args.user_id, args.player_id)
+        else:
+            print("Missing user_id or player_id for updating points")
+
     conn.close()
 
 
