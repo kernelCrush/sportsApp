@@ -75,11 +75,16 @@ def teams_with_wins_over(conn, win_count):
     cursor.execute("SELECT team_name, num_win FROM Teams WHERE num_win > ?", (win_count,))
     rows = cursor.fetchall()
 
-    table = PrettyTable(["Team Name", "Wins"])
-    for row in rows:
-        table.add_row(row)
+    if rows is not None:
+        table = PrettyTable(["Team Name", "Wins"])
+        for row in rows:
+            table.add_row(row)
+        print(table)
+    else:
+        print(f"No records found")
 
-    print(table)
+    #
+    # print(table)
 
 
 # query oldest active player
@@ -108,10 +113,12 @@ def highest_scoring_player_in_stadium(conn, stadium_name):
         """, (stadium_name,))
     row = cursor.fetchone()
 
-    table = PrettyTable(["Player Name", "Score", "Stadium"])
-    table.add_row(row)
-
-    print(table)
+    if row is not None:
+        table = PrettyTable(["Player Name", "Score", "Stadium"])
+        table.add_row(row)
+        print(table)
+    else:
+        print(f"No records found for stadium: {stadium_name}")
 
 
 def check_login(conn, username, password):
@@ -154,14 +161,23 @@ def delete_tuple(conn, delete_input):
 
 def update_user_points(conn, user_id, player_id):
     cursor = conn.cursor()
-    update_query = """
-    UPDATE Users
-    SET points = points + (SELECT player_score FROM Players WHERE player_id = ?)
-    WHERE user_id = ?;
-    """
-    cursor.execute(update_query, (player_id, user_id))
-    conn.commit()
-    print(f"Updated points for user ID {user_id} based on player ID {player_id} performance.")
+    update_query = f"SELECT player_score FROM Players WHERE player_id = {player_id}"
+    cursor.execute(update_query)
+    rows = cursor.fetchone()
+    if rows is not None:
+        player_score = rows[0]
+        update_query = """
+            UPDATE Users
+            SET points = points + ?
+            WHERE user_id = ?;
+            """
+        cursor.execute(update_query, (player_score, user_id))
+        print("-----To show update result:")
+        list_table(conn, "Users")
+        conn.commit()
+        print(f"Updated points for user ID {user_id} based on player ID {player_id} performance.")
+    else:
+        print("You entered invalid player id")
 
 # Update tuple for certain table
 def update_tuple(conn, update_input):
@@ -255,11 +271,13 @@ def ticket_booking(conn, match_name, username):
     print("-----To show the transaction result:")
     list_table(conn, "Matches")
     list_table(conn, "BookingHistory")
-
+'''
+ SELECT  M.match_name, T1.team_name AS home_team, T2.team_name AS away_team, S.stad_name AS stadium_name, SP.sport_name, U.user_name AS referee_name FROM Matches M JOIN Teams T1 ON M.home_team_id = T1.team_id  JOIN Teams T2 ON M.away_team_id = T2.team_id JOIN Stadium S ON M.stad_id = S.stad_id JOIN Sports SP ON M.sport_id = SP.
+sport_id;'''
 
 def search_matches(conn):
     sql = '''SELECT
-        M.match_name, T1.team_name AS home_team, T2.team_name AS away_team, S.stad_name AS stadium_name, SP.sport_name, U.user_name AS referee_name
+        M.match_name, M.ticket_price AS price, M.live_score AS score, T1.team_name AS home_team, T2.team_name AS away_team, S.stad_name AS stadium_name, SP.sport_name, U.user_name AS referee_name
         FROM Matches M
         JOIN Teams T1 ON M.home_team_id = T1.team_id
         JOIN Teams T2 ON M.away_team_id = T2.team_id
@@ -364,7 +382,10 @@ def main():
 
     # ----------------------------Jingjing-------------------------------------↓
     elif args.delete:
-        delete_tuple(conn, args.delete)
+        if usr_right_temp == "admin":
+            delete_tuple(conn, args.delete)
+        else:
+            print("Only admin can delete records, you have no permission")
 
     elif args.updatescore:
         if usr_right_temp == "referee":
