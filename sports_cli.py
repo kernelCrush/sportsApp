@@ -2,7 +2,7 @@ import sqlite3
 import argparse
 import datetime
 from prettytable import PrettyTable
-
+import mysql.connector
 
 # =====================varun====================================
 
@@ -336,7 +336,13 @@ def main():
 
     args = parser.parse_args()
 
-    conn = connect_db("sports.db")
+    conn = mysql.connector.connect(
+            host="127.0.0.1",
+            user="root",
+            password="michaelios7",
+            database="sports_info"
+            )
+    #conn = connect_db("sports.db")
 
     # to add user_right checking for the permission of DB operations
     usr_right_temp = ""
