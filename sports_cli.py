@@ -337,9 +337,9 @@ def main():
     args = parser.parse_args()
 
     conn = mysql.connector.connect(
-            host="127.0.0.1",
+            host="root",
             user="root",
-            password="michaelios7",
+            password="password",
             database="sports_info"
             )
     #conn = connect_db("sports.db")
